@@ -5,7 +5,9 @@ import Dashboard from "./components/Dashboard";
 import Wardrobe from "./components/Wardrobe";
 import UpperWear from "./components/UpperWear";
 import TrialRoom from "./components/TrialRoom";
-
+import SignIn from "./components/SignIn";
+import SignUp from "./components/SignUp";
+import "./index.css"; 
 function App() {
   return (
     <Router>
@@ -16,23 +18,29 @@ function App() {
           <CustomNavLink to="/wardrobe">Wardrobe</CustomNavLink>
           <CustomNavLink to="/upper-wear">Upper Wear</CustomNavLink>
           <CustomNavLink to="/trial-room">Trial Room</CustomNavLink>
+          <CustomNavLink to="/signin">Sign In</CustomNavLink>
+          <CustomNavLink to="/signup">Sign Up</CustomNavLink>
         </nav>
 
         {/* Pages */}
         <div className="flex-grow">
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/wardrobe" element={<Wardrobe />} />
-            <Route path="/upper-wear" element={<UpperWear />} />
-            <Route path="/trial-room" element={<TrialRoom />} />
-          </Routes>
+  <Route path="/" element={<SignIn />} />   {/* Start with SignIn */}
+  <Route path="/signup" element={<SignUp />} />
+  <Route path="/dashboard" element={<Dashboard />} />
+  <Route path="/wardrobe" element={<Wardrobe />} />
+  <Route path="/upper-wear" element={<UpperWear />} />
+  <Route path="/trial-room" element={<TrialRoom />} />
+</Routes>
+
+
         </div>
       </div>
     </Router>
   );
 }
 
-// Using react-router-dom's NavLink to get active link styling
+// Navbar component
 function CustomNavLink({ to, children }) {
   return (
     <NavLink
