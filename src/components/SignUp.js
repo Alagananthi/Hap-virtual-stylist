@@ -1,89 +1,163 @@
-import React ,{ useState }  from "react";
-import { Link } from "react-router-dom";
-
-// --- Helper Components (Icons & Input) ---
-
-const UserIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-   className="absolute left-3 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400 peer-focus:animate-bounce"
->
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-    <circle cx="12" cy="7" r="4"></circle>
-  </svg>
-);
-
-const MailIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-   className="absolute left-3 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400 peer-focus:animate-bounce"
->
-    <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-  </svg>
-);
-
-const LockIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    className="absolute left-3 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400 peer-focus:animate-bounce"
->
-    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-  </svg>
-);
-
-const FormInput = ({ icon, type, placeholder }) => (
-  <div className="relative w-full mb-6">
-    {icon}
-    <input
-      type={type}
-      placeholder={placeholder}
-       className="peer w-full pl-12 pr-4 py-3 bg-white/30 border border-gray-300 rounded-lg 
-             text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 
-             focus:ring-pink-300 transition-all duration-300"
-    />
-  </div>
-);
-
-// --- Main SignUp Component ---
-
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Amplify } from "aws-amplify";
+import { signUp } from "aws-amplify/auth";
 function SignUp() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const navigate = useNavigate();
+
+  const handleSignUp = async (e) => {
+    e.preventDefault();
+    try {
+      // And change this line:
+      const { user } = await signUp({
+        username: email,
+        password,
+        options: {
+          userAttributes: {
+            email,
+            name,
+          },
+        },
+      });
+      console.log("Signed up:", user);
+      alert(
+        "Sign up successful! Please check your email for a verification code."
+      );
+      // It's common to navigate to a confirmation page, but sign-in is fine too.
+     navigate("/confirm-signup", { state: { email: email } });
+    } catch (error) {
+      console.error("Sign up error:", error);
+      setErrorMessage(error.message || "Error signing up");
+    }
+  };
+
+
   return (
-    <div className="w-full px-10 animate-fade-in transition-all duration-700">
-      <h2 className="text-4xl font-bold text-center text-gray-800 mb-2 animate-pulse">
-        Create Account
-      </h2>
-      <p className="text-center text-gray-600 mb-8">
-        Let's get you started with your personal stylist.
-      </p>
-      <form className="animate-fade-in">
-        <FormInput icon={<UserIcon />} type="text" placeholder="Full Name" />
-        <FormInput icon={<MailIcon />} type="email" placeholder="Email Address" />
-        <FormInput icon={<LockIcon />} type="password" placeholder="Password" />
-
-       <button
-  className="relative w-full bg-gradient-to-r from-pink-400 to-rose-400 
-             text-white font-bold py-3 rounded-lg shadow-md overflow-hidden group">
-  <span className="relative z-10">SIGN UP</span>
-  <span className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent 
-                   translate-x-[-100%] group-hover:translate-x-[100%] 
-                   transition-transform duration-700 ease-out"></span>
-</button>
-
-        {/* Link to Sign In */}
-        <p className="mt-6 text-center text-gray-700">
-          Already have an account?{" "}
-          <Link
-            to="/signin"
-            className="text-pink-500 font-semibold hover:underline hover:text-pink-600 
-                       transition-colors duration-300"
-          >
-            Sign In
-          </Link>
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-pink-100 to-orange-100">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-10">
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">
+          Create Account
+        </h2>
+        <p className="text-center text-gray-600 mb-8">
+          Let’s get you started with your personal stylist.
         </p>
-      </form>
+
+        {errorMessage && (
+          <div className="text-red-500 text-center mb-4">{errorMessage}</div>
+        )}
+
+        <form onSubmit={handleSignUp} className="space-y-6">
+          {/* Full Name */}
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M5.121 17.804A9 9 0 1118.879 6.196M12 7a4 4 0 100 8 4 4 0 000-8z"
+                />
+              </svg>
+            </span>
+            <input
+              type="text"
+              placeholder="Full Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-300 focus:outline-none"
+              required
+            />
+          </div>
+
+          {/* Email */}
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M16 12H8m8-4H8m-2 8h12M4 6h16M4 6l8 6 8-6"
+                />
+              </svg>
+            </span>
+            <input
+              type="email"
+              placeholder="Email Address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-300 focus:outline-none"
+              required
+            />
+          </div>
+
+          {/* Password */}
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 11c0-1.104.896-2 2-2s2 .896 2 2-.896 2-2 2-2-.896-2-2z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 7v10a2 2 0 002 2h12a2 2 0 002-2V7"
+                />
+              </svg>
+            </span>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-300 focus:outline-none"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-3 rounded-lg font-bold text-white bg-gradient-to-r from-pink-400 to-rose-400 hover:from-pink-500 hover:to-rose-500 shadow-md transition"
+          >
+            SIGN UP
+          </button>
+
+          <p className="text-center text-gray-700">
+            Already have an account?{" "}
+            <Link to="/signin" className="text-pink-500 font-semibold hover:underline">
+              Sign In
+            </Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 }
+
 export default SignUp;
