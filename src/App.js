@@ -9,6 +9,7 @@ import SignUp from "./components/SignUp";
 import ConfirmSignUp from "./components/ConfirmSignUp";
 import "./index.css";
 import { Amplify } from "aws-amplify";
+import { getCurrentUser, signOut } from "aws-amplify/auth";
 
 function App() {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ function App() {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const user = await Amplify.Auth.currentAuthenticatedUser();
+        await getCurrentUser(); // New function
         setIsAuthenticated(true);
       } catch {
         setIsAuthenticated(false);
@@ -25,15 +26,13 @@ function App() {
     };
     checkUser();
   }, []);
-
   const handleLogout = async () => {
     try {
-      await Amplify.Auth.signOut();
+      await signOut(); // New function
       setIsAuthenticated(false);
       navigate("/signin");
     } catch (error) {
       console.error("Error signing out:", error);
-      alert(error.message || "Error signing out");
     }
   };
 
