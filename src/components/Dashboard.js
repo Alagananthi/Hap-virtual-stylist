@@ -1,11 +1,25 @@
 // src/components/Dashboard.js
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { FiUpload, FiStar, FiUsers, FiShuffle } from "react-icons/fi";
+import { fetchUserAttributes } from "aws-amplify/auth";
 
  function Dashboard() {
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    const getUserName = async () => {
+      try {
+        const attributes = await fetchUserAttributes();
+        setUserName(attributes.name || 'User'); // Use the 'name' attribute
+      } catch (e) {
+        console.log(e);
+      }
+    };
+    getUserName();
+  }, []);
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-white flex flex-col items-center p-6">
-      <h1 className="text-2xl font-bold mb-4">Hello, <span className="text-orange-500">Tanmay Mathur 👋</span></h1>
+      <h1 className="text-2xl font-bold mb-4">Hello, <span className="text-orange-500">{userName} 👋</span></h1>
 
       <div className="grid grid-cols-2 gap-4 w-full max-w-md">
         <Card icon={<FiUpload />} title="Upload Dress" desc="13 Clothes Uploaded" />
