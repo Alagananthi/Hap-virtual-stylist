@@ -1,12 +1,28 @@
-import React, { useState } from "react";
+import React, { useState , useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Amplify } from "aws-amplify";
-import { signIn } from "aws-amplify/auth";
+import { signIn , getCurrentUser} from "aws-amplify/auth";
 
 function SignIn({ setIsAuthenticated }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        // If this succeeds, a user is already logged in
+        await getCurrentUser();
+        console.log("User is already signed in, redirecting to dashboard.");
+        setIsAuthenticated(true); // Ensure app state is updated
+        navigate("/dashboard");
+      } catch (error) {
+        // No user is signed in, do nothing.
+        console.log("No user signed in.");
+      }
+    };
+
+    checkAuthStatus();
+  }, [navigate, setIsAuthenticated]);
 
   const handleSignIn = async (e) => {
     e.preventDefault();
