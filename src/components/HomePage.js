@@ -17,6 +17,7 @@ const features = [
     img: "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?auto=format&fit=crop&w=600&q=80",
   },
   {
+    
     title: "Virtual Wardrobe",
     desc: "Upload your clothing pieces and visualize your wardrobe in a stunning, organized interface.",
     img: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=600&q=80",

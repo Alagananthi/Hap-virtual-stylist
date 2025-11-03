@@ -1,7 +1,8 @@
-// src/components/Dashboard.js
+//Dashboard.js->// src/components/Dashboard.js
 import React, { useEffect, useState } from "react";
 import {
   FiMenu,
+  FiX,
   FiUsers,
   FiHeart,
   FiGrid,
@@ -10,25 +11,25 @@ import {
   FiCloudRain,
   FiSun,
   FiCloud,
-  FiAlertCircle,
-} from "react-icons/fi";
+  FiAlertCircle,} from "react-icons/fi";
 import { motion } from "framer-motion";
 import { fetchUserAttributes, signOut } from "aws-amplify/auth";
 import { Link, useNavigate } from "react-router-dom";
 
 function Dashboard() {
   const [userName, setUserName] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [recommendations, setRecommendations] = useState([]);
   const [weather, setWeather] = useState(null);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  // ⛅ Your Lambda API endpoint
   const RECOMMEND_API =
-    "https://qnvrtcxzdb.execute-api.us-east-1.amazonaws.com/dev/RecommendLambda";
+    "https://qnvrtcxzdb.execute-api.us-east-1.amazonaws.com/dev/RecommendLambda"; // ← replace with your deployed Lambda endpoint
 
-  // 👤 Fetch logged-in user
+  // 📌 Fetch logged-in username
   useEffect(() => {
     const getUser = async () => {
       try {
@@ -43,7 +44,7 @@ function Dashboard() {
     getUser();
   }, []);
 
-  // 🌤 Fetch weather + recommendations
+  // 🌦 Fetch location + recommendations
   useEffect(() => {
     const fetchRecommendations = async (lat, lon, userId) => {
       try {
@@ -67,6 +68,8 @@ function Dashboard() {
       try {
         const attrs = await fetchUserAttributes();
         const userId = attrs?.sub || "demo-user";
+
+        // 📍Get current location
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             const { latitude, longitude } = pos.coords;
@@ -87,6 +90,7 @@ function Dashboard() {
     getUserAndLocation();
   }, []);
 
+  // 🚪 Sign Out
   const handleLogout = async () => {
     try {
       await signOut();
@@ -96,6 +100,7 @@ function Dashboard() {
     }
   };
 
+  // 🌈 Weather Icon
   const WeatherIcon = () => {
     if (!weather) return <FiCloud className="text-gray-400" size={28} />;
     switch (weather.weatherMain) {
@@ -110,17 +115,18 @@ function Dashboard() {
     }
   };
 
-  const SidebarLink = ({ to, icon, label, onClick }) => (
+  // 🧭 Sidebar link
+  const LinkItem = ({ to, icon, label, onClick }) => (
     <Link
       to={to}
       onClick={onClick}
-      className="flex items-center gap-4 px-4 py-3 text-gray-700 hover:text-orange-500 transition-all"
+      className="flex items-center space-x-3 text-lg text-gray-700 hover:text-orange-500 transition"
     >
-      {icon}
-      {sidebarOpen && <span className="text-md font-medium">{label}</span>}
+      {icon} <span>{label}</span>
     </Link>
   );
 
+  // 🌀 Loading state
   if (loading)
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-gray-600">
@@ -129,6 +135,7 @@ function Dashboard() {
       </div>
     );
 
+  // ❌ Error state
   if (error)
     return (
       <div className="flex flex-col items-center justify-center min-h-screen text-gray-700">
@@ -138,117 +145,120 @@ function Dashboard() {
     );
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-pink-100 via-rose-100 to-orange-100 font-serif overflow-hidden">
+    <div className="relative min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-purple-100 overflow-hidden">
+      {/* Header */}
+      <div className="flex justify-between items-center p-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+          Welcome,{" "}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500">
+            {userName} 👋
+          </span>
+        </h1>
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="text-3xl text-gray-700 hover:text-orange-500 transition"
+        >
+          {menuOpen ? <FiX /> : <FiMenu />}
+        </button>
+      </div>
+
       {/* Sidebar */}
       <motion.div
-        onMouseEnter={() => setSidebarOpen(true)}
-        onMouseLeave={() => setSidebarOpen(false)}
-        animate={{ width: sidebarOpen ? 220 : 80 }}
-        transition={{ duration: 0.4, ease: "easeInOut" }}
-        className="fixed left-0 top-0 h-full bg-white/70 backdrop-blur-lg shadow-xl flex flex-col py-8 items-center z-40 border-r border-white/40"
+        initial={{ x: "100%" }}
+        animate={{ x: menuOpen ? 0 : "100%" }}
+        transition={{ type: "spring", stiffness: 260 }}
+        className="fixed top-0 right-0 h-full w-64 bg-white/90 backdrop-blur-md shadow-2xl z-50"
       >
-        <motion.div
-          initial={{ rotate: 0 }}
-          animate={{ rotate: sidebarOpen ? 360 : 0 }}
-          transition={{ duration: 0.8 }}
-          className="mb-10"
-        >
-          <FiMenu size={26} className="text-orange-500" />
-        </motion.div>
-
-        <div className="flex flex-col gap-6 w-full">
-          <SidebarLink to="/wardrobe" icon={<FiUpload size={22} />} label="Wardrobe" />
-          <SidebarLink to="/profile" icon={<FiUsers size={22} />} label="Profile" />
-          <SidebarLink to="/favorites" icon={<FiHeart size={22} />} label="Favorites" />
-          <SidebarLink to="/collections" icon={<FiGrid size={22} />} label="Collections" />
-        </div>
-
-        <div className="mt-auto mb-8">
+        <div className="flex flex-col p-6 space-y-6 mt-12">
+          <LinkItem
+            to="/wardrobe"
+            icon={<FiUpload />}
+            label="My Wardrobe"
+            onClick={() => setMenuOpen(false)}
+          />
+          <LinkItem
+            to="/profile"
+            icon={<FiUsers />}
+            label="Profile"
+            onClick={() => setMenuOpen(false)}
+          />
+          <LinkItem
+            to="/favorites"
+            icon={<FiHeart />}
+            label="Favorites"
+            onClick={() => setMenuOpen(false)}
+          />
+          <LinkItem
+            to="/collections"
+            icon={<FiGrid />}
+            label="Collections"
+            onClick={() => setMenuOpen(false)}
+          />
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 text-red-500 hover:text-red-600 transition"
+            className="flex items-center space-x-3 text-lg text-red-500 hover:text-red-600 transition"
           >
-            <FiLogOut size={22} />
-            {sidebarOpen && <span className="text-md font-medium">Logout</span>}
+            <FiLogOut /> <span>Sign Out</span>
           </button>
         </div>
       </motion.div>
 
-      {/* Main Section */}
-      <div className="flex-1 ml-[80px] md:ml-[100px] lg:ml-[220px] p-10 transition-all duration-500">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-10">
-          <motion.h1
-            initial={{ y: -30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 1 }}
-            className="text-4xl font-bold text-gray-800 tracking-tight"
-          >
-            Welcome,{" "}
-            <span className="bg-gradient-to-r from-orange-500 to-rose-400 bg-clip-text text-transparent">
-              {userName} 👋
-            </span>
-          </motion.h1>
-
-          {weather && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center bg-white/70 backdrop-blur-md px-5 py-2 rounded-full shadow-md"
-            >
-              <WeatherIcon />
-              <p className="ml-3 text-sm text-gray-700">
-                {weather.weatherMain} — {weather.tempC}°C
-              </p>
-            </motion.div>
-          )}
-        </div>
-
-        {/* Recommendations */}
+      {/* Weather Info */}
+      {weather && (
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          className="max-w-6xl mx-auto"
+          className="mx-auto mt-4 flex items-center justify-center bg-white/80 rounded-2xl shadow-lg px-6 py-3 max-w-sm"
         >
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
-            Recommended Outfits for You ✨
-          </h2>
-
-          {recommendations.length === 0 ? (
-            <p className="text-center text-gray-500">
-              No outfit recommendations found.
+          <WeatherIcon />
+          <div className="ml-3 text-gray-700">
+            <p className="font-semibold text-lg">{weather.weatherMain}</p>
+            <p className="text-sm">
+              Temperature:{" "}
+              <span className="font-medium">{weather.tempC}°C</span>
             </p>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-              {recommendations.map((rec, idx) => (
-                <motion.div
-                  key={idx}
-                  whileHover={{ scale: 1.05, y: -5 }}
-                  transition={{ duration: 0.4 }}
-                  className="bg-white/70 backdrop-blur-md rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition"
-                >
-                  <img
-                    src={rec.url}
-                    alt={rec.category || "outfit"}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-4 text-center">
-                    <p className="font-semibold text-gray-800 text-md">
-                      {rec.category || "Outfit"}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Labels: {rec.labels?.slice(0, 3).join(", ")}
-                    </p>
-                    <p className="text-xs text-orange-500 mt-1 font-medium">
-                      Weather Fit Score: {rec.score}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          )}
+          </div>
         </motion.div>
+      )}
+
+      {/* Recommendations */}
+      <div className="mt-10 px-6">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4 text-center">
+          Recommended Outfits for You 👗
+        </h2>
+
+        {recommendations.length === 0 ? (
+          <p className="text-center text-gray-500">
+            No outfit recommendations found.
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+            {recommendations.map((rec, idx) => (
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                key={idx}
+                className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer"
+              >
+                <img
+                  src={rec.url}
+                  alt={rec.category || "outfit"}
+                  className="w-full h-48 object-cover"
+                />
+                <div className="p-3 text-center">
+                  <p className="text-sm font-semibold text-gray-800">
+                    {rec.category || "Outfit"}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Labels: {rec.labels?.slice(0, 3).join(", ")}
+                  </p>
+                  <p className="text-xs text-orange-500 mt-1">
+                    Weather Fit Score: {rec.score}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
